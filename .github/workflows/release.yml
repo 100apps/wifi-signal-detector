@@ -1,0 +1,60 @@
+name: 构建并发布 APK
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-master
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+      - name: 安装 Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: 安装 Android SDK 组件
+        run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install 'platforms;android-35' 'build-tools;35.0.1'
+      - name: 准备 APK 签名
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          test -n "$ANDROID_KEYSTORE_BASE64"
+          test -n "$ANDROID_KEYSTORE_PASSWORD"
+          mkdir -p .signing
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > .signing/release.jks
+      - name: 设置自动构建版本号
+        run: |
+          base_code=$(sed -n 's/.*android:versionCode="\([0-9]*\)".*/\1/p' AndroidManifest.xml)
+          base_name=$(sed -n 's/.*android:versionName="\([^"]*\)".*/\1/p' AndroidManifest.xml)
+          test -n "$base_code"
+          test -n "$base_name"
+          build_code=$((base_code + GITHUB_RUN_NUMBER))
+          sed -i -E "s/android:versionCode=\"[0-9]+\"/android:versionCode=\"${build_code}\"/" AndroidManifest.xml
+          sed -i -E "s/android:versionName=\"[^\"]+\"/android:versionName=\"${base_name}.${GITHUB_RUN_NUMBER}\"/" AndroidManifest.xml
+      - name: 构建已签名 APK
+        env:
+          SIGNING_KEYSTORE: .signing/release.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: bash build.sh
+      - name: 创建 Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "build-${GITHUB_RUN_NUMBER}" ./wifi-signal-detector.apk \
+            --target "$GITHUB_SHA" \
+            --title "WiFi 信号探测器 · 自动构建 #${GITHUB_RUN_NUMBER}" \
+            --notes "master 分支自动构建。APK 使用项目正式签名，可覆盖安装之前的版本。" \
+            --latest

@@ -1,0 +1,7 @@
+build/
+.signing/
+*.apk
+*.idsig
+.idea/
+.gradle/
+local.properties

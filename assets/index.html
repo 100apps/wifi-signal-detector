@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>WiFi 信号探测器</title>
+  <style>
+    :root { color-scheme:dark; font-family:system-ui,-apple-system,"Microsoft YaHei",sans-serif; background:#09131d; color:#e9f4ff }
+    * { box-sizing:border-box } body { margin:0 }
+    header { padding:16px 18px 12px; background:#0e1d2a; border-bottom:1px solid #294052 }
+    h1 { margin:0 0 5px; font-size:22px } .sub { color:#adc0cd; font-size:13px; line-height:1.5 }
+    .stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; padding:10px; background:#0c1925 }
+    .stat { padding:9px 11px; border:1px solid #294253; border-radius:10px; background:#142637; min-width:0 }
+    .label { color:#99b1c1; font-size:12px } .value { padding-top:4px; font-weight:700; font-size:20px; overflow-wrap:anywhere }
+    .small { font-size:13px } .workspace { padding:0 10px; }
+    .chart-title { margin:4px 2px 7px; color:#dcecf7; font-size:14px; font-weight:700 }
+    #signalChart { display:block; width:100%; height:220px; margin-bottom:10px; border:1px solid #294253; border-radius:12px; background:#0b1824 }
+    #plan { display:block; width:100%; height:calc(100dvh - 310px); min-height:310px; border:1px solid #294253; border-radius:12px; background:#0b1824; touch-action:none }
+    #heightPanel { display:none; margin-top:8px; border:1px solid #294253; border-radius:12px; padding:7px; background:#0b1824 }
+    #heightPanel.visible { display:block } #heightChart { display:block; width:100%; height:170px }
+    .toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:10px }
+    button { border:0; border-radius:9px; background:#2888e8; color:#fff; font:inherit; padding:9px 12px; cursor:pointer }
+    button.secondary { background:#223f55 } label { font-size:13px; white-space:nowrap }
+    #meta { padding:0 12px 12px; color:#a7bdc9; font-size:12px; line-height:1.5 }
+    @media(max-width:650px) { .stats { grid-template-columns:repeat(2,minmax(0,1fr)) } #plan { height:calc(100dvh - 415px) } }
+  </style>
+</head>
+<body>
+  <header><h1>WiFi 信号探测器</h1><div class="sub">实时查看已连接 Wi‑Fi 的信号变化；位置以原点为基准显示相对移动。低精度定位会标出误差范围。</div></header>
+  <div class="stats">
+    <div class="stat"><div class="label">实时连接</div><div class="value small" id="state">连接中…</div></div>
+    <div class="stat"><div class="label">Wi‑Fi / RSSI</div><div class="value" id="signal">—</div></div>
+    <div class="stat"><div class="label">相对位置</div><div class="value small" id="relative">—</div></div>
+    <div class="stat"><div class="label">水平定位估计精度（68%）</div><div class="value" id="accuracy">—</div></div>
+  </div>
+  <div class="workspace">
+    <div class="chart-title">实时 Wi‑Fi 强度 · 横轴时间 · 纵轴 RSSI（dBm）</div>
+    <canvas id="signalChart" role="img" aria-label="横轴时间、纵轴 Wi-Fi 信号强度 dBm 的实时曲线"></canvas>
+    <div class="chart-title">相对位置与信号分布</div>
+    <canvas id="plan" role="img" aria-label="相对位置与 Wi-Fi 信号强度平面图"></canvas>
+    <div id="heightPanel"><canvas id="heightChart" role="img" aria-label="可选高度与 Wi-Fi 信号强度剖面图"></canvas></div>
+  </div>
+  <div class="toolbar">
+    <button id="zoomIn" class="secondary">放大</button><button id="zoomOut" class="secondary">缩小</button>
+    <button id="follow">跟随当前位置</button>
+    <button id="setOrigin" class="secondary">设当前位置为原点</button>
+    <button id="resetOrigin" class="secondary">恢复首点原点</button>
+    <label><input type="checkbox" id="heightToggle"> 显示高度</label>
+    <button id="export" class="secondary">保存 PNG</button>
+  </div>
+  <div id="meta">正在等待手机采样。</div>
+  <div id="originInfo" style="padding:0 12px 12px;color:#a7bdc9;font-size:12px">原点：等待首个位置</div>
+  <script src="/app.js"></script>
+</body>
+</html>
