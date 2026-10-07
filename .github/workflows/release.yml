@@ -34,7 +34,7 @@ jobs:
           test -n "$ANDROID_KEYSTORE_BASE64"
           test -n "$ANDROID_KEYSTORE_PASSWORD"
           mkdir -p .signing
-          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > .signing/release.jks
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | tr -d '\r\n' | base64 --decode > .signing/release.jks
       - name: 设置自动构建版本号
         run: |
           base_code=$(sed -n 's/.*android:versionCode="\([0-9]*\)".*/\1/p' AndroidManifest.xml)

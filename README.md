@@ -1,5 +1,7 @@
 # WiFi 信号探测器
 
+![自动构建](https://github.com/100apps/wifi-signal-detector/actions/workflows/release.yml/badge.svg)
+
 独立 Android APK。无需 Termux。持续读取手机**当前已连接 Wi‑Fi** 的 RSSI，显示最近 60 秒的实时强度曲线，并在无地图底图的相对坐标平面上叠加信号采样点。采集页面在 APK 内；同一局域网设备也可以通过 App 显示的带随机密钥链接查看。
 
 ## 功能
