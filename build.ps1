@@ -11,7 +11,7 @@ $classesDir = Join-Path $build 'classes'
 $signing = Join-Path $root '.signing'
 New-Item -ItemType Directory -Force $classesDir, $signing | Out-Null
 $sources = Get-ChildItem (Join-Path $root 'src') -Recurse -Filter '*.java' | ForEach-Object FullName
-& javac -source 8 -target 8 -classpath $jar -d $classesDir @sources
+& javac --release 8 -classpath $jar -d $classesDir @sources
 if ($LASTEXITCODE -ne 0) { throw 'Java 编译失败' }
 $unsigned = Join-Path $build 'unsigned.apk'
 & (Join-Path $buildTools 'aapt.exe') package -f -M (Join-Path $root 'AndroidManifest.xml') -S (Join-Path $root 'res') -A (Join-Path $root 'assets') -I $jar -F $unsigned

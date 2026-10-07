@@ -1,0 +1,33 @@
+name: PR 构建检查
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v7
+      - name: 安装 Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: 安装 Android SDK 组件
+        run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install 'platforms;android-35' 'build-tools;35.0.1'
+      - name: 检查脚本与前端语法
+        run: |
+          bash -n build.sh
+          node --check assets/app.js
+      - name: 构建开发签名 APK
+        run: bash build.sh
+      - name: 检查名称与图标
+        run: |
+          "$ANDROID_HOME/build-tools/35.0.1/aapt" dump badging wifi-signal-detector.apk | grep "application-label:'WiFi 信号探测器'"
+          unzip -l wifi-signal-detector.apk | grep 'res/drawable-nodpi-v4/ic_launcher.png'
